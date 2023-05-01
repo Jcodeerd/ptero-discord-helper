@@ -1,0 +1,73 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2023-05-01T23:36:06+02:00",
+    "name": "media-helper",
+    "author": "mail@kaashout.tech",
+    "description": "https:\/\/github.com\/eartharoid\/discord-mediahelper",
+    "features": null,
+    "docker_images": {
+        "registry.gitlab.com\/tenten8401\/pterodactyl-nginx": "registry.gitlab.com\/tenten8401\/pterodactyl-nginx",
+        "Need to make a custom docker image, this one doesnt work": "Need to make a custom docker image, this one doesnt work"
+    },
+    "file_denylist": [],
+    "startup": "if [[ -d .git ]] && [[ {{AUTO_UPDATE}} == \"1\" ]]; then git pull; fi; if [[ ! -z ${NODE_PACKAGES} ]]; then \/usr\/local\/bin\/npm install ${NODE_PACKAGES}; fi; if [[ ! -z ${UNNODE_PACKAGES} ]]; then \/usr\/local\/bin\/npm uninstall ${UNNODE_PACKAGES}; fi; if [ -f \/home\/container\/package.json ]; then \/usr\/local\/bin\/npm install; fi; && {{STARTUP_CMD}}",
+    "config": {
+        "files": "{\r\n    \"nginx\/conf.d\/default.conf\": {\r\n        \"parser\": \"file\",\r\n        \"find\": {\r\n            \"    listen \": \"    listen {{server.build.default.port}};\"\r\n        }\r\n    }\r\n}",
+        "startup": "{\r\n    \"done\": \"Connected to Discord as\",\r\n    \"userInteraction\": []\r\n}",
+        "logs": "{\r\n    \"custom\": false,\r\n    \"location\": \"logs\/latest.log\"\r\n}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/ash\r\n\r\ncd \/mnt\/server\r\n\r\napk --update add git ffmpeg\r\n\r\n#nginx part\r\ngit clone https:\/\/gitlab.com\/tenten8401\/pterodactyl-nginx .\/temp\r\n\r\ncp -r .\/temp\/nginx \/mnt\/server\/\r\ncp -r .\/temp\/php-fpm \/mnt\/server\/\r\ncp -r .\/temp\/webroot \/mnt\/server\/\r\n\r\n\r\nchmod +x \/mnt\/server\/start.sh\r\n\r\nrm -rf .\/temp\r\n\r\n# mediahelper part\r\n\r\ngit clone https:\/\/github.com\/eartharoid\/discord-mediahelper.git \/mnt\/server\/mediahelper\r\ntouch \/mnt\/server\/.env\r\n# create config files\r\nmkdir \/mnt\/server\/config && touch \/mnt\/server\/config\/.netrc && touch \/mnt\/server\/config\/cookies.txt && touch \/mnt\/server\/config\/proxies.txt\r\ncd \/mnt\/server \r\nnpm i\r\n# install yt-dlp\r\nmkdir bin && curl -o bin\/yt-dlp https:\/\/github.com\/yt-dlp\/yt-dlp\/releases\/latest\/download\/yt-dlp\r\n\r\n# download start.sh script\r\ngit clone https:\/\/github.com\/Jcodeerd\/ptero-discord-helper\/ temp2\r\ncp .\/temp2\/start.sh \/mnt\/server",
+            "container": "node:18-alpine",
+            "entrypoint": "ash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Startup Command",
+            "description": "The command to start",
+            "env_variable": "STARTUP_CMD",
+            "default_value": ".\/start.sh",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "present",
+            "field_type": "text"
+        },
+        {
+            "name": "Auto Update",
+            "description": "Pull the latest files on startup when using a GitHub repo.",
+            "env_variable": "AUTO_UPDATE",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "Git Repo Address",
+            "description": "GitHub Repo to clone",
+            "env_variable": "GIT_ADDRESS",
+            "default_value": "https:\/\/github.com\/eartharoid\/discord-mediahelper",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Additional Node packages",
+            "description": "Install additional node packages.\r\n\r\nUse spaces to separate.",
+            "env_variable": "NODE_PACKAGES",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        }
+    ]
+}
